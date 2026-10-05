@@ -1,5 +1,5 @@
 resource "aws_sns_topic" "alerts" {
-  name = "kestrel-platform-alerts"
+  name = "${var.cluster_name}-alerts"
   tags = var.tags
 }
 
