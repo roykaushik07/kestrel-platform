@@ -1,0 +1,37 @@
+name: terraform-apply
+
+on:
+  push:
+    branches: [main]
+    paths: ["terraform/**"]
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency: terraform-prod
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: terraform/envs/prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::381492650173:role/kestrel-github-terraform
+          aws-region: eu-west-1
+      - run: terraform init -input=false
+      - run: terraform apply -input=false -auto-approve
+        env:
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_dispatch_db_password: ${{ secrets.DISPATCH_DB_PASSWORD }}
+          TF_VAR_custody_ledger_password: ${{ secrets.CUSTODY_LEDGER_PASSWORD }}
+          TF_VAR_ghcr_credentials_secret_arn: ${{ vars.GHCR_CREDENTIALS_SECRET_ARN }}

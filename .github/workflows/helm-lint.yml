@@ -1,0 +1,19 @@
+name: helm-lint
+
+on:
+  pull_request:
+    paths: ["deploy/**"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.1
+      - name: Lint every chart
+        run: |
+          for chart in deploy/charts/*/; do
+            helm lint "$chart"
+          done

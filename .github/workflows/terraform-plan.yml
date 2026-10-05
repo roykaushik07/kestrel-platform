@@ -1,0 +1,38 @@
+name: terraform-plan
+
+on:
+  pull_request:
+    paths: ["terraform/**"]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/envs/prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::381492650173:role/kestrel-github-terraform-plan
+          aws-region: eu-west-1
+      - run: terraform init -input=false
+      - run: terraform plan -input=false -no-color -out=plan.tfplan
+        env:
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_dispatch_db_password: ${{ secrets.DISPATCH_DB_PASSWORD }}
+          TF_VAR_custody_ledger_password: ${{ secrets.CUSTODY_LEDGER_PASSWORD }}
+          TF_VAR_ghcr_credentials_secret_arn: ${{ vars.GHCR_CREDENTIALS_SECRET_ARN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: terraform/envs/prod/plan.tfplan

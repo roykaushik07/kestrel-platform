@@ -1,0 +1,64 @@
+# Local dev stack: the two services that front the mission API plus their
+# dependencies. Telemetry and compliance are run from their own repos.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: dispatch
+      POSTGRES_PASSWORD: hunter2
+      POSTGRES_DB: dispatch
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dispatch"]
+      interval: 5s
+      retries: 10
+
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --overprovisioned
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092
+    ports:
+      - "9092:9092"
+
+  localstack:
+    image: localstack/localstack:3.8
+    environment:
+      SERVICES: sns,sqs
+    ports:
+      - "4566:4566"
+
+  gateway:
+    image: ghcr.io/roykaushik07/kestrel-gateway:latest
+    depends_on:
+      - dispatch
+    environment:
+      DISPATCH_ADDR: dispatch:8080
+    ports:
+      - "8000:8000"
+
+  dispatch:
+    image: ghcr.io/roykaushik07/kestrel-dispatch:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+      localstack:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://dispatch:hunter2@postgres:5432/dispatch?sslmode=disable
+      KAFKA_BROKERS: redpanda:9092
+      AWS_ENDPOINT_URL: http://localstack:4566
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
