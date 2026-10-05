@@ -1,0 +1,25 @@
+image:
+  repository: ghcr.io/roykaushik07/kestrel-gateway
+  tag: "1.8.0"
+
+replicaCount: 2
+containerPort: 8080
+
+serviceAccount:
+  annotations: {}
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+env:
+  LOG_LEVEL: info
+  REGION: eu-west-1

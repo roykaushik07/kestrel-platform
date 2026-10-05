@@ -37,26 +37,26 @@ resource "aws_db_parameter_group" "dispatch" {
 }
 
 resource "aws_db_instance" "dispatch" {
-  identifier              = "kestrel-dispatch-prod"
-  engine                  = "postgres"
-  engine_version          = "16.4"
-  instance_class          = "db.r6g.large"
-  allocated_storage       = 200
-  max_allocated_storage   = 1000
-  storage_type            = "gp3"
-  storage_encrypted       = true
-  db_name                 = "dispatch"
-  username                = "dispatch_admin"
-  password                = var.master_password
-  multi_az                = true
-  db_subnet_group_name    = aws_db_subnet_group.dispatch.name
-  vpc_security_group_ids  = [aws_security_group.dispatch_db.id]
-  parameter_group_name    = aws_db_parameter_group.dispatch.name
-  backup_retention_period = 14
-  backup_window           = "02:00-03:00"
-  maintenance_window      = "sun:03:30-sun:04:30"
-  deletion_protection     = true
-  skip_final_snapshot     = false
+  identifier                = "kestrel-dispatch-prod"
+  engine                    = "postgres"
+  engine_version            = "16.4"
+  instance_class            = "db.r6g.large"
+  allocated_storage         = 200
+  max_allocated_storage     = 1000
+  storage_type              = "gp3"
+  storage_encrypted         = true
+  db_name                   = "dispatch"
+  username                  = "dispatch_admin"
+  password                  = var.master_password
+  multi_az                  = true
+  db_subnet_group_name      = aws_db_subnet_group.dispatch.name
+  vpc_security_group_ids    = [aws_security_group.dispatch_db.id]
+  parameter_group_name      = aws_db_parameter_group.dispatch.name
+  backup_retention_period   = 14
+  backup_window             = "02:00-03:00"
+  maintenance_window        = "sun:03:30-sun:04:30"
+  deletion_protection       = true
+  skip_final_snapshot       = false
   final_snapshot_identifier = "kestrel-dispatch-prod-final"
 
   performance_insights_enabled = true
