@@ -9,7 +9,7 @@ spec:
     - https://github.com/roykaushik07/kestrel-platform.git
   destinations:
     - namespace: "kestrel-*"
-      server: https://kubernetes.default.svc
+      name: in-cluster
   clusterResourceWhitelist:
     - group: ""
       kind: Namespace
