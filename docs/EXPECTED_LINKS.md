@@ -74,13 +74,18 @@ Also exposed but with no consumers (no links expected): dispatch exposes `github
 - Multi-line env self-URLs: a value on the line after its key (k8s `name:`/`value:`) is read as a use, producing the compliance -> gateway false positive.
 - k8s Service DNS (`*.svc.cluster.local`) is never an exposes source, so gateway -> dispatch/telemetry/compliance upstreams are unlinked.
 - Cargo and PyPI package naming: no Cargo exposes extractor, and bare names (`kestrel-contracts`) lack the owner, so telemetry and compliance are not linked to contracts.
-- 60-file budget: platform's telemetry Helm values file is cut, so the telemetry image link is missing.
+- 60-file budget: kestrel-platform has 61 candidate files and the scanner keeps the 60 highest-priority (ties in git order). `deploy/helm/values/kestrel-telemetry/values.yaml` (priority 55, last in git order) is cut, which is why the platform -> telemetry image link is absent (T2-budget).
 - Python, Go and Rust source is never read; only manifests, env files, config and infra files count.
 - Kafka topic keys: telemetry's `config/default.toml` `topic = "drone.telemetry.v2"` alone would be missed, since a bare `topic =` key is ignored. The link exists only because `deploy/k8s/configmap.yaml` carries `KESTREL__KAFKA__TOPIC`.
 
 ## Traps
 
-- `legacy-router.kestrel-air.net` and `mqtt.kestrel-air.net` look like owned hosts but nothing in the picked repos exposes them, so they stay unresolved.
+- Same-line self URLs: kestrel-gateway/.env.example#L2 `ALLOWED_ORIGINS=https://ops.kestrel-air.net` and kestrel-console/.env.example#L1 `NEXTAUTH_URL=https://ops.kestrel-air.net` produce no fact (the key filter rejects them on the same line). Contrast with the multi-line compliance CORS false positive, where the value is on the line after its key.
+- Credential redaction: kestrel-dispatch/.env.example#L1 `DATABASE_URL=postgres://admin:hunter2@kestrel-dispatch-prod...` yields a fact whose value is the RDS host/identifier only; the snippet shows `//•••@`, never the password.
+- `ops.kestrel-air.net` has a Cloudflare record pointing at `cname.vercel-dns.com` (kestrel-platform/terraform/modules/dns/public.tf#L18). Nobody exposes the target, so there is no link.
+- kestrel-platform/docker-compose.yml deliberately excludes the telemetry and compliance images (see its header comment), so those image links depend only on Helm values files. That is what makes the 60-file budget case bite for telemetry.
+- `legacy-router.kestrel-air.net` (kestrel-console/.env.example#L3) is a decommissioned host; nothing exposes it, so it stays unresolved.
+- `mqtt.kestrel-air.net` (kestrel-telemetry/config/default.toml#L2) stays unresolved: the platform private-zone record (kestrel-platform/terraform/modules/dns/private.tf#L14) points at an IoT Core endpoint nobody exposes.
 - `kestrel.okta.com` and `github.com` are third-party hosts and stay unresolved.
 - Platform's image self-references are intentional links (platform deploys everything), not noise.
 - Each service's own deployment image (for example `ghcr.io/roykaushik07/kestrel-gateway` in gateway's deploy/k8s/deployment.yaml) is a self-reference and stays unresolved.
