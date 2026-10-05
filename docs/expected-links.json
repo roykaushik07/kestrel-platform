@@ -1,0 +1,450 @@
+{
+  "system": "kestrel",
+  "pickOrder": [
+    "roykaushik07/kestrel-console",
+    "roykaushik07/kestrel-gateway",
+    "roykaushik07/kestrel-dispatch",
+    "roykaushik07/kestrel-telemetry",
+    "roykaushik07/kestrel-compliance",
+    "roykaushik07/kestrel-contracts",
+    "roykaushik07/kestrel-platform"
+  ],
+  "links": [
+    {
+      "tier": "T1",
+      "key": "host:roykaushik07/kestrel-console->roykaushik07/kestrel-gateway:api.kestrel-air.net",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-console",
+          "path": ".env.example",
+          "line": 2
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/dns/public.tf",
+          "line": 7
+        },
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "deploy/k8s/ingress.yaml",
+          "line": 12
+        }
+      ],
+      "note": "Console env URL, Cloudflare DNS record, and the gateway ingress host: three-hop chain."
+    },
+    {
+      "tier": "T1",
+      "key": "host:roykaushik07/kestrel-dispatch->roykaushik07/kestrel-telemetry:telemetry.internal.kestrel-air.net",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": ".env.example",
+          "line": 5
+        },
+        {
+          "repo": "roykaushik07/kestrel-telemetry",
+          "path": "deploy/k8s/ingress.yaml",
+          "line": 11
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T1",
+      "key": "host:roykaushik07/kestrel-telemetry->roykaushik07/kestrel-dispatch:dispatch.internal.kestrel-air.net",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-telemetry",
+          "path": "config/default.toml",
+          "line": 11
+        },
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": "deploy/k8s/ingress.yaml",
+          "line": 12
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T1",
+      "key": "host:roykaushik07/kestrel-compliance->roykaushik07/kestrel-dispatch:dispatch.internal.kestrel-air.net",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-compliance",
+          "path": ".env.example",
+          "line": 3
+        },
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": "deploy/k8s/ingress.yaml",
+          "line": 12
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "FP",
+      "key": "host:roykaushik07/kestrel-compliance->roykaushik07/kestrel-gateway:api.kestrel-air.net",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-compliance",
+          "path": "deploy/k8s/deployment.yaml",
+          "line": 23
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/dns/public.tf",
+          "line": 7
+        },
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "deploy/k8s/ingress.yaml",
+          "line": 12
+        }
+      ],
+      "note": "False positive: the CORS allowed-origin value sits on the line after its key in a k8s env list (name/value pair); compliance serves this origin, it does not call it."
+    },
+    {
+      "tier": "T2",
+      "key": "queue:roykaushik07/kestrel-dispatch->roykaushik07/kestrel-platform:kestrel-mission-events",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": ".env.example",
+          "line": 2
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/messaging/main.tf",
+          "line": 1
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T2",
+      "key": "queue:roykaushik07/kestrel-compliance->roykaushik07/kestrel-platform:kestrel-custody-intake",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-compliance",
+          "path": ".env.example",
+          "line": 1
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/messaging/main.tf",
+          "line": 11
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T2",
+      "key": "queue:roykaushik07/kestrel-telemetry->roykaushik07/kestrel-platform:drone.telemetry.v2",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-telemetry",
+          "path": "deploy/k8s/configmap.yaml",
+          "line": 6
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/msk/topics.tf",
+          "line": 11
+        }
+      ],
+      "note": "Evidence is the configmap KESTREL__KAFKA__TOPIC; a bare topic key in config/default.toml is ignored by the extractor."
+    },
+    {
+      "tier": "T2",
+      "key": "queue:roykaushik07/kestrel-dispatch->roykaushik07/kestrel-platform:drone.telemetry.v2",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": ".env.example",
+          "line": 4
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/msk/topics.tf",
+          "line": 11
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T2",
+      "key": "database:roykaushik07/kestrel-dispatch->roykaushik07/kestrel-platform:kestrel-dispatch-prod",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": ".env.example",
+          "line": 1
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/rds/main.tf",
+          "line": 39
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T2",
+      "key": "database:roykaushik07/kestrel-compliance->roykaushik07/kestrel-platform:kestrel-custody-ledger",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-compliance",
+          "path": ".env.example",
+          "line": 2
+        },
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "terraform/modules/aurora/main.tf",
+          "line": 29
+        }
+      ],
+      "note": "Aurora cluster endpoint (kestrel-custody-ledger.cluster-<hash>...) is rejected by the RDS hostname regex because of the cluster- segment.",
+      "knownBug": "aurora-cluster-endpoint"
+    },
+    {
+      "tier": "T2",
+      "key": "image:roykaushik07/kestrel-platform->roykaushik07/kestrel-gateway:ghcr.io/roykaushik07/kestrel-gateway",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "docker-compose.yml",
+          "line": 39
+        },
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "Dockerfile",
+          "line": 1
+        }
+      ],
+      "note": "Deduped to docker-compose.yml (priority 90, read first)."
+    },
+    {
+      "tier": "T2",
+      "key": "image:roykaushik07/kestrel-platform->roykaushik07/kestrel-dispatch:ghcr.io/roykaushik07/kestrel-dispatch",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "docker-compose.yml",
+          "line": 48
+        },
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": "Dockerfile",
+          "line": 1
+        }
+      ],
+      "note": "Deduped to docker-compose.yml (priority 90, read first)."
+    },
+    {
+      "tier": "T2",
+      "key": "image:roykaushik07/kestrel-platform->roykaushik07/kestrel-compliance:ghcr.io/roykaushik07/kestrel-compliance",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "deploy/helm/values/kestrel-compliance/values.yaml",
+          "line": 2
+        },
+        {
+          "repo": "roykaushik07/kestrel-compliance",
+          "path": "Dockerfile",
+          "line": 1
+        }
+      ],
+      "note": "Compliance is not in the compose file; evidence is its Helm values file."
+    },
+    {
+      "tier": "T2-budget",
+      "key": "image:roykaushik07/kestrel-platform->roykaushik07/kestrel-telemetry:ghcr.io/roykaushik07/kestrel-telemetry",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-platform",
+          "path": "deploy/helm/values/kestrel-telemetry/values.yaml",
+          "line": 2
+        },
+        {
+          "repo": "roykaushik07/kestrel-telemetry",
+          "path": "Dockerfile",
+          "line": 1
+        }
+      ],
+      "note": "Real use, but values.yaml is past the 60-file budget cut so StackPrism never reads it."
+    },
+    {
+      "tier": "T2",
+      "key": "package:roykaushik07/kestrel-console->roykaushik07/kestrel-contracts:@kestrel/contracts",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-console",
+          "path": "package.json",
+          "line": 13
+        },
+        {
+          "repo": "roykaushik07/kestrel-contracts",
+          "path": "package.json",
+          "line": 2
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T2",
+      "key": "package:roykaushik07/kestrel-gateway->roykaushik07/kestrel-contracts:@kestrel/contracts",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "plugins/edge-auth/package.json",
+          "line": 13
+        },
+        {
+          "repo": "roykaushik07/kestrel-contracts",
+          "path": "package.json",
+          "line": 2
+        }
+      ],
+      "note": "From the nested plugins/edge-auth package.json."
+    },
+    {
+      "tier": "T2",
+      "key": "package:roykaushik07/kestrel-gateway->roykaushik07/kestrel-contracts:github.com/roykaushik07/kestrel-contracts/go",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "go.mod",
+          "line": 9
+        },
+        {
+          "repo": "roykaushik07/kestrel-contracts",
+          "path": "go/go.mod",
+          "line": 1
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T2",
+      "key": "package:roykaushik07/kestrel-dispatch->roykaushik07/kestrel-contracts:github.com/roykaushik07/kestrel-contracts/go",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-dispatch",
+          "path": "go.mod",
+          "line": 10
+        },
+        {
+          "repo": "roykaushik07/kestrel-contracts",
+          "path": "go/go.mod",
+          "line": 1
+        }
+      ],
+      "note": ""
+    },
+    {
+      "tier": "T3",
+      "key": "host:roykaushik07/kestrel-gateway->roykaushik07/kestrel-dispatch:kestrel-dispatch.kestrel.svc.cluster.local",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "config/routes.yaml",
+          "line": 4
+        }
+      ],
+      "note": "k8s Service DNS name is not an exposes source."
+    },
+    {
+      "tier": "T3",
+      "key": "host:roykaushik07/kestrel-gateway->roykaushik07/kestrel-telemetry:kestrel-telemetry.kestrel.svc.cluster.local",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "config/routes.yaml",
+          "line": 5
+        }
+      ],
+      "note": "k8s Service DNS name is not an exposes source."
+    },
+    {
+      "tier": "T3",
+      "key": "host:roykaushik07/kestrel-gateway->roykaushik07/kestrel-compliance:kestrel-compliance.kestrel.svc.cluster.local",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-gateway",
+          "path": "config/routes.yaml",
+          "line": 6
+        }
+      ],
+      "note": "k8s Service DNS name is not an exposes source."
+    },
+    {
+      "tier": "T3",
+      "key": "package:roykaushik07/kestrel-telemetry->roykaushik07/kestrel-contracts:kestrel-contracts",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-telemetry",
+          "path": "Cargo.toml",
+          "line": 25
+        },
+        {
+          "repo": "roykaushik07/kestrel-contracts",
+          "path": "rust/Cargo.toml",
+          "line": 2
+        }
+      ],
+      "note": "Cargo has no exposes extractor; the git dependency name lacks the owner."
+    },
+    {
+      "tier": "T3",
+      "key": "package:roykaushik07/kestrel-compliance->roykaushik07/kestrel-contracts:kestrel-contracts",
+      "evidence": [
+        {
+          "repo": "roykaushik07/kestrel-compliance",
+          "path": "pyproject.toml",
+          "line": 18
+        },
+        {
+          "repo": "roykaushik07/kestrel-contracts",
+          "path": "python/pyproject.toml",
+          "line": 6
+        }
+      ],
+      "note": "PyPI name lacks the owner, so it is not treated as internal."
+    }
+  ],
+  "unresolved": [
+    {
+      "repo": "roykaushik07/kestrel-console",
+      "kind": "host",
+      "value": "legacy-router.kestrel-air.net",
+      "note": "Owned domain with no exposes record anywhere."
+    },
+    {
+      "repo": "roykaushik07/kestrel-console",
+      "kind": "host",
+      "value": "o4508001.ingest.de.sentry.io",
+      "note": "Third-party SaaS."
+    },
+    {
+      "repo": "roykaushik07/kestrel-compliance",
+      "kind": "host",
+      "value": "api.twilio.com",
+      "note": "Third-party SaaS."
+    },
+    {
+      "repo": "roykaushik07/kestrel-gateway",
+      "kind": "host",
+      "value": "kestrel-dispatch.kestrel.svc.cluster.local",
+      "note": "In-cluster Service DNS; nothing exposes it."
+    },
+    {
+      "repo": "roykaushik07/kestrel-dispatch",
+      "kind": "host",
+      "value": "api.altitudeangel.com",
+      "note": "Third-party SaaS."
+    }
+  ]
+}
