@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars (gitignored) and fill in. CI supplies these via
+# TF_VAR_* environment variables from GitHub environment secrets.
+cloudflare_api_token        = "cf-token-goes-here"
+cloudflare_zone_id          = "0123456789abcdef0123456789abcdef"
+dispatch_db_password        = "hunter2"
+custody_ledger_password     = "s3cret"
+ghcr_credentials_secret_arn = "arn:aws:secretsmanager:eu-west-1:381492650173:secret:ecr-pullthroughcache/ghcr-AbCdEf"
+alert_email                 = "platform-oncall@kestrel-air.net"
