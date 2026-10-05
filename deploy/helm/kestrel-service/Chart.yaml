@@ -3,4 +3,5 @@ name: kestrel-service
 description: Shared chart for Kestrel Air HTTP services
 type: application
 version: 0.4.0
-appVersion: "0.0.0"
+# Per-service image tags come from each service's values (image.tag); this is the chart's own app version.
+appVersion: "1.0.0"

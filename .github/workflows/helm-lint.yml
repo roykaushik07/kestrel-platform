@@ -14,6 +14,6 @@ jobs:
           version: v3.16.1
       - name: Lint every chart
         run: |
-          for chart in deploy/charts/*/; do
+          for chart in deploy/helm/*/; do
             helm lint "$chart"
           done
